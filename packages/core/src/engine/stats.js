@@ -18,6 +18,9 @@ export function dashboardStats(views, shipments) {
   return {
     totalComparisons: views.length,
     activeShipments: shipments.filter((s) => s.status === 'active').length,
+    averageOffers: views.length ? round2(views.reduce((s, v) => s + v.entries.length, 0) / views.length) : null,
+    incompleteComparisons: views.filter((v) => v.missingCount > 0).length,
+    completeComparisons: views.filter((v) => v.missingCount === 0).length,
     averageBestCost: bestTotals.length ? round2(bestTotals.reduce((s, x) => s + x, 0) / bestTotals.length) : null,
     averageSample: bestTotals.length,
     potentialSavings: savings.length ? round2(savings.reduce((s, x) => s + x, 0)) : null,
@@ -73,4 +76,68 @@ export function knownVsUnknown(entries) {
     unknown += a.additional.unknownCount;
     return { offerId: e.offer.id, carrier: e.carrier?.name ?? '—', known, unknown };
   });
+}
+
+/**
+ * Confirmed money per cost category, summed over the LEADING offer of every comparison that has one
+ * (best comparable offer), in the base currency. Unknown amounts are never included.
+ */
+export function expenseByCategory(views) {
+  const totals = {};
+  let counted = 0;
+  for (const v of views) {
+    const best = v.entries.find((e) => e.offer.id === v.result.bestOfferId);
+    if (!best || best.item.currencyBlocked) continue;
+    counted += 1;
+    const rate = best.item.rate;
+    const add = (k, x) => {
+      if (x > 0) totals[k] = round2((totals[k] ?? 0) + x * rate);
+    };
+    add('base', best.analysis.price ?? 0);
+    for (const r of best.analysis.rows) if (r.state === 'charged' || r.state === 'extra') add(r.key, r.amount);
+    add('additional', best.analysis.additional.knownSum);
+  }
+  return { totals, counted };
+}
+
+/** Per ISO week (Monday start), oldest first: comparisons created, and the sum of their best comparable totals (`spend`, only comparisons with a winner). */
+export function activityByWeek(views, weeks = 8) {
+  const monday = (iso) => {
+    const d = new Date(iso);
+    const day = (d.getUTCDay() + 6) % 7;
+    d.setUTCDate(d.getUTCDate() - day);
+    return d.toISOString().slice(0, 10);
+  };
+  const map = new Map();
+  for (const v of views) {
+    if (!v.comparison.createdAt) continue;
+    const k = monday(v.comparison.createdAt);
+    const r = map.get(k) ?? { count: 0, spend: 0, priced: 0 };
+    r.count += 1;
+    if (isNum(v.result.bestTotal)) { r.spend = round2(r.spend + v.result.bestTotal); r.priced += 1; }
+    map.set(k, r);
+  }
+  const keys = [...map.keys()].sort();
+  if (!keys.length) return [];
+  // fill gaps so the time axis is honest
+  const out = [];
+  const last = new Date(`${keys[keys.length - 1]}T00:00:00Z`);
+  const first = new Date(`${keys[0]}T00:00:00Z`);
+  for (let d = new Date(first); d <= last; d.setUTCDate(d.getUTCDate() + 7)) {
+    const k = d.toISOString().slice(0, 10);
+    const r = map.get(k);
+    out.push({ week: k, count: r?.count ?? 0, spend: r?.spend ?? 0, priced: r?.priced ?? 0 });
+  }
+  return out.slice(-weeks);
+}
+
+/** How many offers each carrier has submitted across all comparisons. */
+export function offersByCarrier(views) {
+  const map = new Map();
+  for (const v of views)
+    for (const e of v.entries) {
+      const name = e.carrier?.name ?? '—';
+      map.set(name, (map.get(name) ?? 0) + 1);
+    }
+  return [...map.entries()].map(([carrier, offers]) => ({ carrier, offers })).sort((a, b) => b.offers - a.offers);
 }

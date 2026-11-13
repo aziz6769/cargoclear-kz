@@ -9,6 +9,18 @@ export function StatusBadge({ status }) {
   return <Badge tone={tone}>{t(`status.${status}`)}</Badge>;
 }
 
+/** Per-offer comparability: comparable / partial / not_comparable (same wording as the overall status). */
+export function ComparabilityBadge({ value }) {
+  const { t } = useApp();
+  const map = {
+    comparable: ['ok', 'complete'],
+    partial: ['warn', 'partial'],
+    not_comparable: ['bad', 'incomplete'],
+  };
+  const [tone, key] = map[value] ?? map.partial;
+  return <Badge tone={tone}>{t(`status.${key}`)}</Badge>;
+}
+
 export function DemoBadge() {
   const { t } = useApp();
   return <Badge tone="neutral" className="uppercase tracking-wide">{t('common.demo')}</Badge>;

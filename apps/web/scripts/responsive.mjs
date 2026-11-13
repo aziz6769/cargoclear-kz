@@ -40,12 +40,27 @@ const ROUTES = [
   ['carrier-modal', '/carriers', async () => { await clickText('button', t.newCarrier); await sleep(300); }],
   ['analytics', '/analytics?c=cmp_demo4'],
   ['settings', '/settings'],
+  ['jury-results', '/comparisons/cmp_jury1'],
+  ['shipment-details', '/shipments/shp_jury1'],
+  ['report', '/comparisons/cmp_jury1/report', async () => { await page.evaluate(() => { try { localStorage.setItem('x','1'); } catch {} }); }],
+  ['assistant-empty', '/assistant?c=cmp_jury1'],
+  ['assistant-answer', '/assistant?c=cmp_jury1', async () => { await page.evaluate(() => document.querySelector('[data-suggestion="compare_all"]')?.click()); await sleep(500); await page.evaluate(() => document.querySelector('[data-suggestion="ask_carrier"]')?.click()); await sleep(500); }],
+  ['results-panel', '/comparisons/cmp_jury1', async () => { await page.evaluate(() => document.querySelector('[data-assistant-panel] button[aria-expanded]')?.click()); await sleep(300); await page.evaluate(() => document.querySelector('[data-suggestion="why_not_cheapest"]')?.click()); await sleep(500); }],
+  ['documents', '/documents'],
+  ['document-modal', '/documents', async () => { await clickText('button', t.newDoc); await sleep(300); }],
+  ['analytics-portfolio', '/analytics'],
+  ['analytics-filtered', '/analytics?route=none&gran=week'],
+  ['shipments-filtered', '/shipments?q=zzz&sort=weight'],
+  ['carrier-profile', '/carriers', async () => { await page.evaluate(() => document.querySelector('[data-carrier-row], main li button, main table tbody tr')?.click()); await sleep(400); }],
+  ['demo-1', '/demo'],
+  ['demo-3', '/demo', async () => { await clickText('button', t.next); await sleep(200); await clickText('button', t.next); await sleep(300); }],
+  ['demo-last', '/demo', async () => { for (let i = 0; i < 8; i++) { await clickText('button', t.next); await sleep(150); } }],
 ];
 let t = {};
 const LANGS = {
-  ru: { next: 'Далее', newShipment: 'Новый груз', newCarrier: 'Новый перевозчик' },
-  kk: { next: 'Әрі қарай', newShipment: 'Жаңа жүк', newCarrier: 'Жаңа тасымалдаушы' },
-  en: { next: 'Next', newShipment: 'New shipment', newCarrier: 'New carrier' },
+  ru: { next: 'Далее', newShipment: 'Новый груз', newCarrier: 'Новый перевозчик', newDoc: 'Добавить документ' },
+  kk: { next: 'Әрі қарай', newShipment: 'Жаңа жүк', newCarrier: 'Жаңа тасымалдаушы', newDoc: 'Құжат қосу' },
+  en: { next: 'Next', newShipment: 'New shipment', newCarrier: 'New carrier', newDoc: 'Add document' },
 };
 
 async function audit() {
@@ -69,7 +84,7 @@ async function audit() {
       }
       // financial values must not be cut off
       if (el.classList.contains('tabular') && el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible') {
-        out.clipped.push(el.textContent.trim().slice(0, 30));
+        out.clipped.push((el.textContent.trim() || el.tagName + '[' + (el.placeholder || el.name || el.value) + '] sw=' + el.scrollWidth + ' cw=' + el.clientWidth).slice(0, 60));
       }
       if (vw < 768 && ['BUTTON', 'A', 'SELECT', 'INPUT'].includes(el.tagName) && !el.closest('[data-skip-target]')) {
         if ((r.height < 36 || r.width < 36) && el.type !== 'checkbox' && el.type !== 'hidden') {

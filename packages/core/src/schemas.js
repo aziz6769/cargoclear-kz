@@ -1,12 +1,16 @@
 import { z } from 'zod';
 import {
   CARGO_CATEGORIES,
+  COUNTRIES,
   COST_COMPONENTS,
   COST_STATUSES,
   CURRENCIES,
   ENDPOINTS,
   SHIPMENT_STATUSES,
   TRANSPORT_TYPES,
+  CARRIER_SERVICES,
+  DOCUMENT_TYPES,
+  INTERACTION_CHANNELS,
   emptyCosts,
 } from './constants.js';
 
@@ -37,10 +41,17 @@ const nonNegInt = z.preprocess(
 const text = z.string({ required_error: 'v.required' }).trim().min(2, 'v.min2');
 const optText = z.string().optional().default('');
 
+const optDate = z.string().optional().default('');
+
 export const shipmentSchema = z.object({
   name: text,
+  originCountry: z.enum(COUNTRIES).default('KZ'),
   origin: text,
+  destinationCountry: z.enum(COUNTRIES).default('KZ'),
   destination: text,
+  cargoDescription: optText,
+  requiredDate: optDate,
+  shipDate: optDate,
   deliveryPoint: text,
   weightKg: positive,
   volumeM3: positive,
@@ -61,11 +72,32 @@ export const carrierSchema = z.object({
   phone: optText,
   email: z.string().trim().email('v.email').or(z.literal('')).optional().default(''),
   notes: optText,
+  routes: z.string().max(600, 'v.tooLong').optional().default(''), // served routes, one per line
+  services: z.array(z.enum(CARRIER_SERVICES)).optional().default([]),
+});
+
+export const interactionSchema = z.object({
+  channel: z.enum(INTERACTION_CHANNELS),
+  date: z.string().min(1, 'v.required'),
+  note: z.string().trim().min(2, 'v.min2').max(500, 'v.tooLong'),
+});
+
+export const documentSchema = z.object({
+  title: text,
+  type: z.enum(DOCUMENT_TYPES),
+  shipmentId: z.string().optional().default(''),
+  offerId: z.string().optional().default(''),
+  carrierId: z.string().optional().default(''),
+  date: optDate,
+  amount: numOrNull,
+  currency: z.enum(CURRENCIES).default('KZT'),
+  notes: z.string().max(500, 'v.tooLong').optional().default(''),
 });
 
 const costSchema = z.object({
   status: z.enum(COST_STATUSES),
   amount: numOrNull,
+  note: z.string().max(300, 'v.max300').optional().default(''),
 });
 
 export const offerFormSchema = z.object({
@@ -74,6 +106,8 @@ export const offerFormSchema = z.object({
   price: numOrNull,
   currency: z.enum(CURRENCIES),
   startLocation: optText,
+  quoteDate: optDate,
+  validUntil: optDate,
   endpoint: z.enum(ENDPOINTS),
   endpointLabel: optText,
   transportType: z.enum(TRANSPORT_TYPES),
@@ -108,8 +142,13 @@ export const splitList = (s) =>
 export function defaultShipmentValues() {
   return {
     name: '',
+    originCountry: 'KZ',
     origin: '',
+    destinationCountry: 'KZ',
     destination: '',
+    cargoDescription: '',
+    requiredDate: '',
+    shipDate: '',
     deliveryPoint: '',
     weightKg: '',
     volumeM3: '',
@@ -131,6 +170,8 @@ export function defaultOfferValues(currency = 'KZT') {
     price: '',
     currency,
     startLocation: '',
+    quoteDate: new Date().toISOString().slice(0, 10),
+    validUntil: '',
     endpoint: 'warehouse',
     endpointLabel: '',
     transportType: 'truck_ftl',
@@ -152,13 +193,15 @@ export function offerToForm(offer, carrier) {
     price: offer.price ?? '',
     currency: offer.currency,
     startLocation: offer.startLocation ?? '',
+    quoteDate: offer.quoteDate ?? '',
+    validUntil: offer.validUntil ?? '',
     endpoint: offer.endpoint,
     endpointLabel: offer.endpointLabel ?? '',
     transportType: offer.transportType,
     includedServices: (offer.includedServices ?? []).join(', '),
     excludedServices: (offer.excludedServices ?? []).join(', '),
     costs: Object.fromEntries(
-      Object.entries(costs).map(([k, c]) => [k, { status: c.status, amount: c.amount ?? '' }]),
+      Object.entries(costs).map(([k, c]) => [k, { status: c.status, amount: c.amount ?? '', note: c.note ?? '' }]),
     ),
     additionalCharges: (offer.additionalCharges ?? []).map((c) => ({ name: c.name ?? '', amount: c.amount ?? '' })),
     deliveryDays: offer.deliveryDays ?? '',
@@ -175,6 +218,7 @@ export function formToOffer(values, carrierId) {
     costs[k] = {
       status: c.status,
       amount: c.status === 'charged' || c.status === 'excluded' ? c.amount : null,
+      ...(c.status === 'unknown' && c.note?.trim() ? { note: c.note.trim() } : {}),
     };
   }
   return {
@@ -183,6 +227,8 @@ export function formToOffer(values, carrierId) {
     price: values.price,
     currency: values.currency,
     startLocation: values.startLocation,
+    quoteDate: values.quoteDate,
+    validUntil: values.validUntil,
     endpoint: values.endpoint,
     endpointLabel: values.endpointLabel,
     transportType: values.transportType,

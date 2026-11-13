@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { GitCompare, Package, Pencil, Plus, Trash2 } from 'lucide-react';
+import { GitCompare, Package, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { defaultShipmentValues, shipmentSchema } from '@cargoclear/core';
 import { useApp } from '../../app/DataContext.jsx';
-import { Badge, Button, Card, ConfirmDialog, EmptyState, IconButton, Modal, PageHeader } from '../../components/ui.jsx';
+import { Badge, Button, Card, ConfirmDialog, EmptyState, IconButton, Input, Modal, PageHeader, Select } from '../../components/ui.jsx';
 import ShipmentFields from '../../components/ShipmentFields.jsx';
 import { useIsTabletUp } from '../../lib/useMedia.js';
 
-function ShipmentModal({ shipment, onClose }) {
+export function ShipmentModal({ shipment, onClose }) {
   const { t, repo, act } = useApp();
   const methods = useForm({
     resolver: zodResolver(shipmentSchema),
@@ -48,6 +48,30 @@ export default function Shipments() {
   const [editing, setEditing] = useState(null); // null | 'new' | shipment
   const [del, setDel] = useState(null);
   const tone = { draft: 'neutral', active: 'brand', delivered: 'ok' };
+  // filters live in the URL, so the view survives reloads, back/forward and shared links
+  const [params, setParams] = useSearchParams();
+  const q = params.get('q') ?? '';
+  const status = params.get('status') ?? '';
+  const sort = params.get('sort') ?? 'newest';
+  const setParam = (k, v) => {
+    const next = new URLSearchParams(params);
+    if (v) next.set(k, v); else next.delete(k);
+    setParams(next, { replace: true });
+  };
+  const list = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    const rows = data.shipments.filter((s) =>
+      (!status || s.status === status) &&
+      (!needle || [s.name, s.origin, s.destination, s.cargoDescription, s.deliveryPoint].some((x) => String(x ?? '').toLowerCase().includes(needle))));
+    const by = {
+      newest: (a, b) => String(b.createdAt).localeCompare(String(a.createdAt)),
+      oldest: (a, b) => String(a.createdAt).localeCompare(String(b.createdAt)),
+      name: (a, b) => a.name.localeCompare(b.name),
+      weight: (a, b) => b.weightKg - a.weightKg,
+      required: (a, b) => (a.requiredDate || '9999').localeCompare(b.requiredDate || '9999'),
+    }[sort] ?? (() => 0);
+    return [...rows].sort(by);
+  }, [data.shipments, q, status, sort]);
 
   return (
     <div>
@@ -57,15 +81,32 @@ export default function Shipments() {
         actions={<Button variant="primary" icon={Plus} onClick={() => setEditing('new')}>{t('ship.new')}</Button>}
       />
       <Card>
+        {data.shipments.length > 0 && (
+          <div className="grid grid-cols-1 gap-2 border-b border-line p-3 sm:grid-cols-[minmax(0,1fr)_170px_190px] sm:p-4" data-filters>
+            <div className="relative">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
+              <Input value={q} onChange={(e) => setParam('q', e.target.value)} placeholder={t('ship.search')} aria-label={t('ship.search')} className="pl-9" />
+            </div>
+            <Select value={status} onChange={(e) => setParam('status', e.target.value)} aria-label={t('ship.status')}>
+              <option value="">{t('ship.allStatuses')}</option>
+              {['draft', 'active', 'delivered'].map((k) => <option key={k} value={k}>{t(`shipStatus.${k}`)}</option>)}
+            </Select>
+            <Select value={sort} onChange={(e) => setParam('sort', e.target.value === 'newest' ? '' : e.target.value)} aria-label={t('ship.sort')}>
+              {['newest', 'oldest', 'name', 'weight', 'required'].map((k) => <option key={k} value={k}>{t(`ship.sort.${k}`)}</option>)}
+            </Select>
+          </div>
+        )}
         {data.shipments.length === 0 ? (
           <EmptyState icon={Package} title={t('empty.shipments.title')} text={t('empty.shipments.text')} action={<Button variant="primary" icon={Plus} onClick={() => setEditing('new')}>{t('ship.new')}</Button>} />
+        ) : list.length === 0 ? (
+          <EmptyState icon={Search} title={t('ship.noResults')} text={t('ship.noResultsText')} action={<Button onClick={() => setParams({}, { replace: true })}>{t('common.resetFilters')}</Button>} />
         ) : !tabletUp ? (
           <ul className="divide-y divide-line">
-            {data.shipments.map((s) => (
+            {list.map((s) => (
               <li key={s.id} className="space-y-2 px-4 py-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold leading-snug">{s.name}</div>
+                    <Link to={`/shipments/${s.id}`} className="inline-flex min-h-[40px] items-center text-sm font-semibold leading-snug hover:text-brand">{s.name}</Link>
                     <div className="mt-0.5 text-xs text-ink-soft">{s.origin} → {s.destination}</div>
                   </div>
                   <Badge tone={tone[s.status]}>{t(`shipStatus.${s.status}`)}</Badge>
@@ -101,10 +142,10 @@ export default function Shipments() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {data.shipments.map((s) => (
+                {list.map((s) => (
                   <tr key={s.id} className="hover:bg-canvas/50">
                     <td className="px-5 py-3">
-                      <div className="font-semibold">{s.name}</div>
+                      <Link to={`/shipments/${s.id}`} className="font-semibold hover:text-brand">{s.name}</Link>
                       <div className="text-xs text-ink-soft">{fmt.date(s.createdAt)}{s.isDemo && ` · ${t('common.demo')}`}</div>
                     </td>
                     <td className="px-3 py-3">{s.origin} → {s.destination}</td>

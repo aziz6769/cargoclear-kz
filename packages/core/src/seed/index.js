@@ -4,5 +4,8 @@ import shipments from './shipments.json';
 import offers from './offers.json';
 import comparisons from './comparisons.json';
 
-export const seed = { carriers, shipments, offers, comparisons };
+import { buildJuryScenario } from './jury.js';
+
+export { JURY_IDS, buildJuryScenario } from './jury.js';
+export const seed = { carriers, shipments, offers, comparisons, juryScenario: buildJuryScenario };
 export default seed;

@@ -1,4 +1,4 @@
-import { COST_COMPONENTS, ENDPOINT_LEVEL } from '../constants.js';
+import { COST_COMPONENTS, ENDPOINT_LEVEL, OPTIONAL_COMPONENTS, defaultCost } from '../constants.js';
 import { isNum, round2 } from '../money.js';
 
 /**
@@ -17,6 +17,10 @@ export function requiredComponents(shipment, offer) {
     handling: !!shipment.specialHandling,
     insurance: !!shipment.insuranceRequired,
     customs: !!shipment.customsRequired,
+    // Optional components matter only if the user flagged them; see analyzeOffer.
+    pickup: false,
+    fuel: false,
+    other: false,
   };
 }
 
@@ -44,13 +48,19 @@ export function analyzeOffer(offer, shipment) {
   if (price === null) missing.push({ key: 'base', reason: 'base_missing' });
 
   for (const key of COST_COMPONENTS) {
-    const cost = offer.costs?.[key] ?? { status: 'unknown', amount: null };
+    const cost = offer.costs?.[key] ?? defaultCost(key);
     const amount = isNum(cost.amount) ? cost.amount : null;
-    const req = !!required[key];
+    // An optional component the user flagged as unknown/excluded is a real open question.
+    const optional = OPTIONAL_COMPONENTS.includes(key);
+    const req = optional ? cost.status === 'unknown' || cost.status === 'excluded' : !!required[key];
     let state;
     let value = null;
 
-    if (cost.status === 'included') {
+    if (cost.status === 'na' && !(key === 'lastMile' && req)) {
+      // Explicitly not applicable: never counted and never a gap. The one exception is the
+      // last-mile leg when the offer stops short of the destination - that stays unresolved.
+      state = 'na';
+    } else if (cost.status === 'included') {
       state = 'included';
     } else if (cost.status === 'charged') {
       if (amount !== null) {

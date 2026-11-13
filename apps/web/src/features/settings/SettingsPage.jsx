@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { validEndpoint } from '@cargoclear/core';
 import { useForm } from 'react-hook-form';
 import { CURRENCIES, LANGUAGES } from '@cargoclear/core';
 import { useApp } from '../../app/DataContext.jsx';
@@ -20,6 +21,30 @@ function Choice({ active, disabled, onClick, children }) {
     >
       {children}
     </button>
+  );
+}
+
+function AssistantSettings() {
+  const { t, settings, repo, act } = useApp();
+  const [url, setUrl] = useState(settings.assistantEndpoint ?? '');
+  const [err, setErr] = useState('');
+  const save = async () => {
+    const v = url.trim();
+    if (v && !validEndpoint(v)) return setErr(t('set.ai.invalid'));
+    setErr('');
+    await act(() => repo.saveSettings({ assistantEndpoint: v }), 'set.ai.saved');
+  };
+  return (
+    <Card>
+      <CardHeader title={t('set.ai.title')} subtitle={t('set.ai.desc')} />
+      <div className="space-y-3 p-5">
+        <Field label={t('set.ai.endpoint')} error={err}>
+          <Input type="url" inputMode="url" autoComplete="off" spellCheck={false} placeholder="https://" value={url} onChange={(e) => setUrl(e.target.value)} data-ai-endpoint />
+        </Field>
+        <p className="text-xs text-ink-soft">{settings.assistantEndpoint ? t('as.privacy.ai') : t('set.ai.off')}</p>
+        <Button onClick={save}>{t('common.save')}</Button>
+      </div>
+    </Card>
   );
 }
 
@@ -138,6 +163,8 @@ export default function SettingsPage() {
             <Button type="submit" variant="primary" loading={isSubmitting}>{t('common.save')}</Button>
           </div>
         </form>
+
+        <AssistantSettings />
 
         <Card>
           <CardHeader title={t('set.data')} subtitle={t('set.dataHint')} />

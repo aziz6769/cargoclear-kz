@@ -1,16 +1,20 @@
+import AssistantPanel from '../assistant/AssistantPanel.jsx';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { AlertTriangle, BarChart3, Check, ChevronDown, ClipboardCopy, Copy, GitCompare, HelpCircle, MapPin, Pencil, Trash2 } from 'lucide-react';
-import { COST_COMPONENTS } from '@cargoclear/core';
+import { AlertTriangle, BarChart3, Check, ChevronDown, ClipboardCopy, Copy, FileDown, GitCompare, HelpCircle, MapPin, Pencil, Printer, Trash2 } from 'lucide-react';
+import { COST_COMPONENTS, comparisonToCsv } from '@cargoclear/core';
 import { useApp } from '../../app/DataContext.jsx';
 import { Badge, Banner, Button, Card, CardHeader, ConfirmDialog, EmptyState, PageHeader, cx } from '../../components/ui.jsx';
-import { CarrierName, CostBar, EndpointBadge, StatusBadge, route } from '../../components/common.jsx';
+import { CarrierName, ComparabilityBadge, CostBar, EndpointBadge, StatusBadge, route } from '../../components/common.jsx';
+import { InfoTip } from '../../components/Term.jsx';
+import { downloadText, safeFilename } from '../../lib/download.js';
+import { AutoAnalysis, ExplainAccordion, ExplainPanel } from './Analysis.jsx';
 import { COMPONENT_COLORS } from '../../lib/palette.js';
 import { useIsDesktop } from '../../lib/useMedia.js';
 
 /* ---------- shared cells (used by the desktop table AND the mobile cards) ---------- */
 
-function CostCell({ row, currency }) {
+export function CostCell({ row, currency }) {
   const { t, fmt } = useApp();
   switch (row.state) {
     case 'included':
@@ -149,6 +153,7 @@ function OfferCard({ e, result, onCopy }) {
   const missingNames = a.missing.map((m) => (m.key === 'charge' ? m.name || t('comp.additional') : t(`comp.${m.key}`)));
   const rows = a.rows.filter((r) => r.state !== 'na');
 
+
   return (
     <Card className={cx('min-w-0 overflow-hidden', e.item.rank === 1 && 'border-teal/60 ring-1 ring-teal/30')}>
       <div className="space-y-3.5 p-4">
@@ -160,7 +165,10 @@ function OfferCard({ e, result, onCopy }) {
               {a.deliveryDays !== null && <span className="tabular"> · {a.deliveryDays} {t('common.daysShort')}</span>}
             </div>
           </div>
-          {e.item.rank === 1 && <Badge tone="teal"><Check size={12} /> {t('res.best')}</Badge>}
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            {e.item.rank === 1 && <Badge tone="teal"><Check size={12} /> {t('res.best')}</Badge>}
+            <ComparabilityBadge value={e.item.comparability} />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 rounded-xl bg-canvas p-3">
@@ -250,6 +258,10 @@ function OfferCard({ e, result, onCopy }) {
             <span className="text-ink-soft">{t('res.toDestination')}</span>
             <div className="text-right"><ToDestinationCell e={e} /></div>
           </div>
+          <div className="border-t border-line py-3">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-soft">{t('res.howCalculated')}</div>
+            <ExplainPanel e={e} result={result} />
+          </div>
         </div>
       )}
 
@@ -278,7 +290,7 @@ function OfferCard({ e, result, onCopy }) {
 
 export default function ComparisonResults() {
   const { id } = useParams();
-  const { views, t, fmt, act, repo, notify } = useApp();
+  const { views, t, fmt, lang, act, repo, notify } = useApp();
   const navigate = useNavigate();
   const desktop = useIsDesktop();
   const [confirmDel, setConfirmDel] = useState(false);
@@ -341,8 +353,13 @@ export default function ComparisonResults() {
         actions={
           <>
             <StatusBadge status={result.status} />
-            <div className="flex gap-2 max-sm:ml-auto">
+            <div className="flex min-w-0 flex-wrap justify-end gap-2 max-sm:ml-auto">
               {actionBtn(BarChart3, t('nav.analytics'), () => navigate(`/analytics?c=${id}`))}
+              {actionBtn(FileDown, t('res.exportCsv'), () => {
+                downloadText(`cargoclear-${safeFilename(comparison.name)}.csv`, comparisonToCsv(view, t, lang));
+                notify('ok', t('res.csvDone'));
+              })}
+              {actionBtn(Printer, t('res.report'), () => navigate(`/comparisons/${id}/report`))}
               {actionBtn(Pencil, t('common.edit'), () => navigate(`/comparisons/${id}/edit`))}
               {actionBtn(Copy, t('common.duplicate'), async () => {
                 const r = await act(() => repo.duplicateComparison(id, ` ${t('common.copySuffix')}`), 'res.duplicated');
@@ -410,6 +427,8 @@ export default function ComparisonResults() {
         )}
       </div>
 
+      <AutoAnalysis view={view} />
+
       <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
         <Card className={cx('col-span-2 p-4 sm:p-5 md:col-span-1', best && 'border-teal/40')}>
           <div className="text-xs font-medium text-ink-soft">{t('res.bestOffer')}</div>
@@ -467,7 +486,8 @@ export default function ComparisonResults() {
                           <CarrierName carrier={e.carrier} className="text-[15px]" />
                           {e.item.rank === 1 && <Badge tone="teal"><Check size={12} /> {t('res.best')}</Badge>}
                         </div>
-                        <div className="mt-0.5 text-xs font-normal text-ink-soft">{t(`transport.${e.offer.transportType}`)}</div>
+                        <div className="mt-1"><ComparabilityBadge value={e.item.comparability} /></div>
+                        <div className="mt-1 text-xs font-normal text-ink-soft">{t(`transport.${e.offer.transportType}`)}</div>
                         <div className="mt-2.5"><CostBar entry={e} /></div>
                       </th>
                     ))}
@@ -475,13 +495,14 @@ export default function ComparisonResults() {
                 </thead>
                 <tbody>
                   <Row label={t('comp.base')} cell={(e) => <BaseCell e={e} />} />
-                  {COST_COMPONENTS.map((k) => (
+                  {COST_COMPONENTS.filter((k) => entries.some((e) => e.analysis.rows.find((r) => r.key === k)?.state !== 'na')).map((k) => (
                     <Row
                       key={k}
                       label={
                         <span className="inline-flex items-center gap-2">
                           <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: COMPONENT_COLORS[k] }} />
                           {t(`comp.${k}`)}
+                          {['terminal', 'lastMile', 'storage', 'customs', 'handling', 'unloading'].includes(k) && <InfoTip term={k} />}
                         </span>
                       }
                       cell={(e) => <CostCell row={e.analysis.rows.find((r) => r.key === k)} currency={e.offer.currency} />}
@@ -499,6 +520,7 @@ export default function ComparisonResults() {
                   )}
                   <Row shade label={t('res.toDestination')} hint={t('res.toDestinationHint')} cell={(e) => <ToDestinationCell e={e} />} />
                   <Row shade strong label={t('res.final')} hint={t('res.finalHint')} cell={(e) => <FinalCell e={e} result={result} />} />
+                  <Row label={t('res.status')} cell={(e) => <ComparabilityBadge value={e.item.comparability} />} />
                   <Row label={t('res.vsBest')} cell={(e) => <VsBestCell e={e} />} />
                   <Row label={t('offer.days')} cell={(e) => <span className="tabular">{e.analysis.deliveryDays ?? '—'}{e.analysis.deliveryDays !== null && ` ${t('common.daysShort')}`}</span>} />
                   <Row label={t('res.coverage')} cell={(e) => <CoverageCell e={e} />} />
@@ -513,6 +535,16 @@ export default function ComparisonResults() {
               <span>{t('res.barHint')}</span>
             </div>
           </Card>
+
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold">{t('res.calcTitle')}</h2>
+            <p className="text-sm text-ink-soft">{t('res.calcHint')}</p>
+          </div>
+          <div className="mb-6 space-y-3">
+            {entries.map((e) => (
+              <ExplainAccordion key={e.offer.id} e={e} result={result} />
+            ))}
+          </div>
 
           <div className="mb-3 flex items-center gap-2">
             <HelpCircle size={18} className="text-brand" />
@@ -539,6 +571,8 @@ export default function ComparisonResults() {
           </div>
         </>
       )}
+
+      <AssistantPanel comparisonId={id} />
 
       <ConfirmDialog
         open={confirmDel}

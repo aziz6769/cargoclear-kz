@@ -16,7 +16,10 @@ import {
   User,
   X,
 } from 'lucide-react';
-import { LANGUAGES } from '@cargoclear/core';
+import { Bot, FileText, Play } from 'lucide-react';
+import { Suspense } from 'react';
+import { PageSkeleton } from './Skeleton.jsx';
+import { LangSwitch } from './LangSwitch.jsx';
 import { useApp } from '../app/DataContext.jsx';
 import { Banner, Button, cx } from './ui.jsx';
 
@@ -27,6 +30,8 @@ const NAV = [
   { to: '/shipments', key: 'nav.shipments', icon: Package },
   { to: '/carriers', key: 'nav.carriers', icon: Truck },
   { to: '/analytics', key: 'nav.analytics', icon: BarChart3 },
+  { to: '/documents', key: 'nav.documents', icon: FileText },
+  { to: '/assistant', key: 'nav.assistant', icon: Bot },
   { to: '/history', key: 'nav.history', icon: History },
   { to: '/settings', key: 'nav.settings', icon: Settings },
 ];
@@ -90,35 +95,31 @@ function Sidebar({ expanded, setExpanded }) {
 }
 
 function Topbar() {
-  const { t, lang, repo, reload, settings } = useApp();
+  const { t, settings, launchDemo } = useApp();
   const navigate = useNavigate();
-  const setLang = async (l) => {
-    await repo.saveSettings({ language: l });
-    reload();
-  };
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-line bg-white/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur md:h-16 md:px-8">
       <div className="flex items-center gap-2 md:hidden">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy text-teal">
           <ShieldCheck size={18} />
         </span>
-        <span className="font-bold">CargoClear</span>
+        <span className="font-bold max-[359px]:hidden">CargoClear</span>
       </div>
       <div className="hidden text-sm text-ink-soft md:block">{t('app.tagline')}</div>
       <div className="flex items-center gap-2">
-        <div className="flex overflow-hidden rounded-lg border border-line text-xs font-semibold" role="group" aria-label="language">
-          {LANGUAGES.map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => setLang(l)}
-              aria-pressed={lang === l}
-              className={cx('min-w-[40px] px-2.5 py-2.5 uppercase md:min-w-0 md:py-1.5', lang === l ? 'bg-navy text-white' : 'text-ink-soft hover:bg-canvas')}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
+        <Button
+          variant="secondary"
+          icon={Play}
+          data-launch-demo
+          aria-label={t('demo.launch')}
+          onClick={async () => {
+            const r = await launchDemo();
+            if (r.ok) navigate('/demo');
+          }}
+        >
+          <span className="max-lg:hidden">{t('demo.launch')}</span>
+        </Button>
+        <LangSwitch />
         <Button variant="primary" icon={Plus} onClick={() => navigate('/compare/new')} className="hidden sm:inline-flex">
           {t('common.newComparison')}
         </Button>
@@ -186,7 +187,7 @@ export default function AppShell() {
               </button>
             </div>
           )}
-          <Outlet />
+          <Suspense fallback={<PageSkeleton />}><Outlet /></Suspense>
         </main>
       </div>
       <BottomNav />

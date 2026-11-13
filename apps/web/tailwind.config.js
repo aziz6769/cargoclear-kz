@@ -14,7 +14,10 @@ export default {
         warn: { DEFAULT: '#F2B544', 50: '#FEF5E1', ink: '#8A5A00' },
         bad: { DEFAULT: '#DC5656', 50: '#FCEAEA' },
       },
-      fontFamily: { sans: ['"Inter Variable"', 'Inter', 'system-ui', 'sans-serif'] },
+      fontFamily: {
+        sans: ['"Inter Variable"', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['"Manrope Variable"', '"Inter Variable"', 'Inter', 'system-ui', 'sans-serif'],
+      },
       borderRadius: { card: '14px' },
       boxShadow: { card: '0 1px 2px rgba(20,43,69,0.04), 0 2px 8px rgba(20,43,69,0.04)' },
     },

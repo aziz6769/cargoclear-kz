@@ -1,5 +1,6 @@
 import { useFormContext } from 'react-hook-form';
-import { CARGO_CATEGORIES, ENDPOINTS, SHIPMENT_STATUSES } from '@cargoclear/core';
+import { CARGO_CATEGORIES, COUNTRIES, ENDPOINTS, SHIPMENT_STATUSES } from '@cargoclear/core';
+import { InfoTip } from './Term.jsx';
 import { useApp } from '../app/DataContext.jsx';
 import { Checkbox, Field, Input, Select, Textarea } from './ui.jsx';
 
@@ -14,16 +15,26 @@ export default function ShipmentFields({ prefix = '', showStatus = false }) {
       <Field label={t('ship.name')} required error={e.name?.message} className="md:col-span-2">
         <Input {...r('name')} placeholder={t('ship.namePh')} />
       </Field>
+      <Field label={t('ship.originCountry')}>
+        <Select {...r('originCountry')}>
+          {COUNTRIES.map((x) => <option key={x} value={x}>{t(`country.${x}`)}</option>)}
+        </Select>
+      </Field>
       <Field label={t('ship.origin')} required error={e.origin?.message}>
-        <Input {...r('origin')} placeholder="Алматы" />
+        <Input {...r('origin')} placeholder={t('ship.originPh')} />
+      </Field>
+      <Field label={t('ship.destinationCountry')}>
+        <Select {...r('destinationCountry')}>
+          {COUNTRIES.map((x) => <option key={x} value={x}>{t(`country.${x}`)}</option>)}
+        </Select>
       </Field>
       <Field label={t('ship.destination')} required error={e.destination?.message}>
-        <Input {...r('destination')} placeholder="Астана" />
+        <Input {...r('destination')} placeholder={t('ship.destinationPh')} />
       </Field>
       <Field label={t('ship.deliveryPoint')} required error={e.deliveryPoint?.message}>
         <Input {...r('deliveryPoint')} />
       </Field>
-      <Field label={t('ship.deliveryLevel')} hint={t('ship.deliveryLevelHint')}>
+      <Field label={<span className="inline-flex items-center gap-1">{t('ship.deliveryLevel')}<InfoTip term="endpoint" /></span>} hint={t('ship.deliveryLevelHint')}>
         <Select {...r('deliveryLevel')}>
           {ENDPOINTS.map((x) => <option key={x} value={x}>{t(`endpoint.${x}`)}</option>)}
         </Select>
@@ -60,6 +71,15 @@ export default function ShipmentFields({ prefix = '', showStatus = false }) {
         <Checkbox label={t('ship.special')} {...r('specialHandling')} />
       </div>
       <p className="-mt-2 text-xs text-ink-soft md:col-span-2">{t('ship.flagsHint')}</p>
+      <Field label={t('ship.cargoDescription')} className="md:col-span-2">
+        <Input {...r('cargoDescription')} />
+      </Field>
+      <Field label={t('ship.shipDate')}>
+        <Input type="date" {...r('shipDate')} />
+      </Field>
+      <Field label={t('ship.requiredDate')}>
+        <Input type="date" {...r('requiredDate')} />
+      </Field>
       <Field label={t('ship.requirements')} className="md:col-span-2">
         <Textarea {...r('requirements')} />
       </Field>

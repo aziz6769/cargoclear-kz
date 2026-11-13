@@ -2,6 +2,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   DEFAULT_SETTINGS,
   RepoError,
+  createAssistant,
+  createHttpProvider,
+  rulesProvider,
+  validEndpoint,
   buildAllViews,
   createTranslator,
   formatDate,
@@ -12,7 +16,7 @@ import {
 const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
 
-const EMPTY = { shipments: [], carriers: [], offers: [], comparisons: [], settings: DEFAULT_SETTINGS };
+const EMPTY = { shipments: [], carriers: [], offers: [], comparisons: [], documents: [], events: [], settings: DEFAULT_SETTINGS };
 
 /**
  * Glue between the UI and the data access layer.
@@ -25,14 +29,16 @@ export function DataProvider({ repo, children }) {
   const load = useCallback(async () => {
     try {
       await repo.init();
-      const [shipments, carriers, offers, comparisons, settings] = await Promise.all([
+      const [shipments, carriers, offers, comparisons, documents, events, settings] = await Promise.all([
         repo.getShipments(),
         repo.getCarriers(),
         repo.getOffers(),
         repo.getComparisons(),
+        repo.getDocuments(),
+        repo.getEvents(),
         repo.getSettings(),
       ]);
-      setSt({ status: 'ready', data: { shipments, carriers, offers, comparisons, settings }, error: null });
+      setSt({ status: 'ready', data: { shipments, carriers, offers, comparisons, documents, events, settings }, error: null });
     } catch (error) {
       console.error(error);
       setSt({ status: 'error', data: null, error });
@@ -86,9 +92,24 @@ export function DataProvider({ repo, children }) {
     [load, notify, t],
   );
 
+  /** (Re)build the jury demo scenario in the current language. Touches only the demo records. */
+  const launchDemo = useCallback(() => act(() => repo.launchDemo(lang)), [act, repo, lang]);
+
+  /** Assistant service: rule-based unless the owner configured their own AI proxy endpoint (never an API key). */
+  const aiEndpoint = settings.assistantEndpoint;
+  const assistant = useMemo(() => {
+    let provider = rulesProvider;
+    try {
+      if (validEndpoint(aiEndpoint)) provider = createHttpProvider({ endpoint: aiEndpoint });
+    } catch {
+      /* invalid endpoint -> stay rule-based */
+    }
+    return createAssistant({ repo, provider });
+  }, [repo, aiEndpoint]);
+
   const value = useMemo(
-    () => ({ status: st.status, error: st.error, repo, reload: load, data, settings, lang, t, views, fmt, notify, act }),
-    [st.status, st.error, repo, load, data, settings, lang, t, views, fmt, notify, act],
+    () => ({ status: st.status, error: st.error, repo, reload: load, data, settings, lang, t, views, fmt, notify, act, launchDemo, assistant }),
+    [st.status, st.error, repo, load, data, settings, lang, t, views, fmt, notify, act, launchDemo, assistant],
   );
 
   return (

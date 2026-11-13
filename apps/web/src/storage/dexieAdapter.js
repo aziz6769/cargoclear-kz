@@ -1,6 +1,6 @@
 import Dexie from 'dexie';
 
-const TABLES = ['shipments', 'carriers', 'offers', 'comparisons', 'meta'];
+const TABLES = ['shipments', 'carriers', 'offers', 'comparisons', 'documents', 'events', 'meta'];
 
 /** Storage layer: IndexedDB via Dexie. Implements the adapter contract from @cargoclear/core. */
 export function createDexieAdapter(name = 'cargoclear-kz') {
@@ -10,6 +10,16 @@ export function createDexieAdapter(name = 'cargoclear-kz') {
     carriers: 'id',
     offers: 'id',
     comparisons: 'id',
+    meta: 'key',
+  });
+  // v2 (Phase 3): documents + events. Dexie upgrades existing v1 databases in place and keeps their data.
+  db.version(2).stores({
+    shipments: 'id',
+    carriers: 'id',
+    offers: 'id',
+    comparisons: 'id',
+    documents: 'id, shipmentId',
+    events: 'id, entityId',
     meta: 'key',
   });
   return {

@@ -61,7 +61,11 @@ try {
   check('dashboard: +New Comparison button', t.includes('Новое сравнение'));
   check('dashboard: demo disclaimer', t.includes('вымышленные'));
   check('dashboard: 5 comparisons shown in stats', /Всего сравнений\s*\n?\s*5/.test(t));
-  check('dashboard: average best cost = 388 800 ₸', /388[\s  ]800/.test(t), t.match(/Средняя стоимость[\s\S]{0,60}/)?.[0]);
+  check('dashboard: onboarding welcome (30-second explanation)', t.includes('Сравнивайте реальную стоимость доставки') && t.includes('Запустить демо'));
+  check('dashboard: avg offers per comparison = 3', /Предложений на сравнение\s*\n?\s*3/.test(t), t.match(/Предложений на сравнение[\s\S]{0,40}/)?.[0]);
+  check('dashboard: incomplete comparisons KPI', /Сравнения с неполными данными\s*\n?\s*[1-5]/.test(t));
+  check('dashboard: 3 charts rendered', (await page.$$eval('[data-charts] .recharts-responsive-container', (n) => n.length)) === 3);
+  check('dashboard: recent shipments section', t.includes('Последние грузы'));
   // hand-computed: cmp1 30k + cmp2 25k + cmp3 (single complete offer, no rate) 0 + cmp4 32k + cmp5 33k
   const sav = t.match(/Потенциальная экономия[\s\S]{0,40}/)?.[0] ?? '';
   check('dashboard: potential savings = 120 000 ₸', /120[\s\u00a0\u202f]000/.test(sav), JSON.stringify(sav));

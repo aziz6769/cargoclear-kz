@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { BarChart3, Plus } from 'lucide-react';
 import { COST_COMPONENTS, carrierBreakdown, componentDistribution, knownVsUnknown } from '@cargoclear/core';
 import { useApp } from '../../app/DataContext.jsx';
-import { Banner, Button, Card, CardHeader, EmptyState, PageHeader, Select } from '../../components/ui.jsx';
+import { Banner, Button, Card, CardHeader, EmptyState, PageHeader, Segmented, Select } from '../../components/ui.jsx';
+import { PageSkeleton } from '../../components/Skeleton.jsx';
 import { route } from '../../components/common.jsx';
 import { COMPONENT_COLORS } from '../../lib/palette.js';
 import { useIsPhone } from '../../lib/useMedia.js';
@@ -12,21 +13,8 @@ import { useIsPhone } from '../../lib/useMedia.js';
 const AXIS = { fontSize: 12, fill: '#718096' };
 const compact = (v) => (Math.abs(v) >= 1000 ? `${Math.round(v / 1000)}k` : v);
 
-const short = (n) => (v) => (String(v).length > n ? `${String(v).slice(0, n - 1)}…` : v);
-
-/** Legend drawn in HTML next to the chart: wraps freely, can never be clipped by the SVG viewport. */
-function LegendList({ items }) {
-  return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-1.5 px-4 pb-4 text-xs text-ink-soft">
-      {items.map((i) => (
-        <li key={i.key} className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: i.color }} />
-          {i.label}
-        </li>
-      ))}
-    </ul>
-  );
-}
+export { short, LegendList } from '../../lib/chartUtils.jsx';
+import { short, LegendList } from '../../lib/chartUtils.jsx';
 
 function ChartCard({ title, subtitle, height, legend, children }) {
   return (
@@ -38,7 +26,7 @@ function ChartCard({ title, subtitle, height, legend, children }) {
   );
 }
 
-export default function Analytics() {
+function SingleComparison() {
   const { t, views, fmt } = useApp();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -182,3 +170,31 @@ export default function Analytics() {
 }
 
 const COMPONENT_KEYS_ORDER = [...COST_COMPONENTS, 'additional'];
+
+const PortfolioAnalytics = lazy(() => import('./PortfolioAnalytics.jsx'));
+
+/** Two views: portfolio (all comparisons, with filters) and one comparison in depth. */
+export default function Analytics() {
+  const { t, views } = useApp();
+  const [params, setParams] = useSearchParams();
+  const tab = params.get('tab') ?? (params.get('c') ? 'single' : 'portfolio');
+  const go = (k) => { const next = new URLSearchParams(); next.set('tab', k); setParams(next); };
+  if (views.length === 0) return <SingleComparison />;
+  return (
+    <div>
+      {tab === 'portfolio' && (
+        <PageHeader title={t('nav.analytics')} subtitle={t('ana.portfolioSubtitle')} actions={<Segmented options={[{ value: 'portfolio', label: t('ana.tabPortfolio') }, { value: 'single', label: t('ana.tabSingle') }]} value={tab} onChange={go} />} />
+      )}
+      {tab === 'single' && (
+        <div className="mb-4 flex justify-end">
+          <Segmented options={[{ value: 'portfolio', label: t('ana.tabPortfolio') }, { value: 'single', label: t('ana.tabSingle') }]} value={tab} onChange={go} />
+        </div>
+      )}
+      {tab === 'portfolio' ? (
+        <Suspense fallback={<PageSkeleton />}><PortfolioAnalytics /></Suspense>
+      ) : (
+        <SingleComparison />
+      )}
+    </div>
+  );
+}

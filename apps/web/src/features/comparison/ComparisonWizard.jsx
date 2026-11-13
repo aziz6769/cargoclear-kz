@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp, Plus, Trash2, Git
 import {
   COST_COMPONENTS,
   CURRENCIES,
+  OPTIONAL_COMPONENTS,
   ENDPOINTS,
   TRANSPORT_TYPES,
   comparisonFormSchema,
@@ -17,6 +18,7 @@ import {
 } from '@cargoclear/core';
 import { useApp } from '../../app/DataContext.jsx';
 import ShipmentFields from '../../components/ShipmentFields.jsx';
+import { InfoTip } from '../../components/Term.jsx';
 import { Badge, Banner, Button, Card, EmptyState, Field, IconButton, Input, PageHeader, Segmented, Select, StickyBar, Textarea, cx } from '../../components/ui.jsx';
 
 const MAX_OFFERS = 6;
@@ -28,7 +30,9 @@ const STATUS_CLS = {
   charged: 'bg-brand text-white',
   excluded: 'bg-warn text-ink',
   unknown: 'bg-slate-500 text-white',
+  na: 'bg-slate-300 text-ink',
 };
+const GLOSSARY_COMPONENTS = ['terminal', 'lastMile', 'storage', 'customs', 'handling', 'unloading', 'fuel', 'pickup'];
 
 export default function ComparisonWizard() {
   const { id } = useParams();
@@ -215,6 +219,8 @@ function OfferEditor({ index, open, onToggle, onRemove, canRemove }) {
   const err = errors.offers?.[index] ?? {};
 
   const required = requiredComponents({ ...shipment, storageDays: Number(shipment.storageDays) || 0 }, offer);
+  // Optional components (pickup, fuel, other) only matter once the user flags them as open.
+  for (const k of OPTIONAL_COMPONENTS) required[k] = offer.costs[k]?.status === 'unknown' || offer.costs[k]?.status === 'excluded';
   const blank = (v) => v === '' || v === null || v === undefined;
   const openItems =
     COST_COMPONENTS.filter((k) => {
@@ -225,7 +231,7 @@ function OfferEditor({ index, open, onToggle, onRemove, canRemove }) {
       );
     }).length + (blank(offer.price) ? 1 : 0);
 
-  const statusOptions = ['included', 'charged', 'excluded', 'unknown'].map((v) => ({
+  const statusOptions = ['included', 'charged', 'excluded', 'unknown', 'na'].map((v) => ({
     value: v,
     label: t(`cs.${v}`),
     activeCls: STATUS_CLS[v],
@@ -278,6 +284,12 @@ function OfferEditor({ index, open, onToggle, onRemove, canRemove }) {
             <Field label={t('offer.days')} error={err.deliveryDays?.message}>
               <Input type="number" inputMode="numeric" min="0" {...register(`${p}.deliveryDays`)} />
             </Field>
+            <Field label={t('offer.quoteDate')}>
+              <Input type="date" {...register(`${p}.quoteDate`)} />
+            </Field>
+            <Field label={t('offer.validUntil')} hint={t('offer.validHint')}>
+              <Input type="date" {...register(`${p}.validUntil`)} />
+            </Field>
           </div>
 
           <div>
@@ -287,20 +299,34 @@ function OfferEditor({ index, open, onToggle, onRemove, canRemove }) {
               {COST_COMPONENTS.map((k) => {
                 const c = offer.costs[k];
                 const showAmount = c.status === 'charged' || c.status === 'excluded';
+                const optional = OPTIONAL_COMPONENTS.includes(k);
                 return (
-                  <div key={k} className={cx('grid grid-cols-1 items-center gap-2 py-2.5 lg:grid-cols-[170px_auto_1fr]', !required[k] && 'opacity-60')}>
+                  <div key={k} className={cx('grid grid-cols-1 items-center gap-2 py-2.5 xl:grid-cols-[170px_auto_1fr]', !required[k] && !optional && 'opacity-60')}>
                     <div className="text-sm font-medium">
                       {t(`comp.${k}`)}
-                      {!required[k] && <span className="ml-1 text-xs font-normal text-ink-soft">({t('wiz.notRelevant')})</span>}
+                      {GLOSSARY_COMPONENTS.includes(k) && <InfoTip term={k} className="ml-0.5" />}
+                      {optional ? (
+                        <span className="ml-1 text-xs font-normal text-ink-soft">({t('wiz.optional')})</span>
+                      ) : (
+                        !required[k] && <span className="ml-1 text-xs font-normal text-ink-soft">({t('wiz.notRelevant')})</span>
+                      )}
                     </div>
                     <Controller
                       control={control}
                       name={`${p}.costs.${k}.status`}
                       render={({ field }) => (
-                        <Segmented className="grid w-full grid-cols-2 sm:grid-cols-4 lg:inline-flex lg:w-auto" options={statusOptions} value={field.value} onChange={field.onChange} />
+                        <Segmented className="grid w-full grid-cols-3 sm:grid-cols-5 lg:inline-flex lg:w-auto" options={statusOptions} value={field.value} onChange={field.onChange} />
                       )}
                     />
-                    <div className="lg:max-w-[200px]">
+                    <div className={c.status === 'unknown' ? 'lg:max-w-[260px]' : 'lg:max-w-[200px]'}>
+                      {c.status === 'unknown' && (
+                        <Input
+                          maxLength={300}
+                          aria-label={`${t(`comp.${k}`)} ${t('wiz.note')}`}
+                          placeholder={t('wiz.note')}
+                          {...register(`${p}.costs.${k}.note`)}
+                        />
+                      )}
                       {showAmount && (
                         <Input
                           type="number"

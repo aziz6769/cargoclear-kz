@@ -12,6 +12,9 @@
     @apply bg-canvas font-sans text-ink antialiased;
     font-feature-settings: 'cv11', 'ss01';
   }
+  h1, h2, h3 {
+    @apply font-display;
+  }
   input[type='number']::-webkit-inner-spin-button,
   input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -19,6 +22,19 @@
   }
   input[type='number'] {
     -moz-appearance: textfield;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 14mm;
+}
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
 

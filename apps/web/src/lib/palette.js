@@ -9,5 +9,8 @@ export const COMPONENT_COLORS = {
   lastMile: '#E8894A',
   insurance: '#8B6FD1',
   customs: '#DC5656',
+  pickup: '#4A5D78',
+  fuel: '#C9A227',
+  other: '#7A8CA5',
   additional: '#A0AEC0',
 };

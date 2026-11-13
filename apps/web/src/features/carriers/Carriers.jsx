@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Pencil, Phone, Plus, Trash2, Truck, User } from 'lucide-react';
-import { carrierSchema } from '@cargoclear/core';
+import { Mail, MapPin, Pencil, Phone, Plus, Search, Trash2, Truck, User } from 'lucide-react';
+import { CARRIER_SERVICES, INTERACTION_CHANNELS, carrierHistory, carrierSchema, interactionSchema } from '@cargoclear/core';
 import { useApp } from '../../app/DataContext.jsx';
-import { Button, Card, CardHeader, ConfirmDialog, EmptyState, Field, Input, Modal, PageHeader, Textarea, cx } from '../../components/ui.jsx';
+import { Badge, Button, Card, CardHeader, Checkbox, ConfirmDialog, EmptyState, Field, Input, Modal, PageHeader, Select, Textarea, cx } from '../../components/ui.jsx';
+import HistoryTimeline from '../../components/HistoryTimeline.jsx';
 import { DemoBadge, EndpointBadge } from '../../components/common.jsx';
 import { useIsTabletUp } from '../../lib/useMedia.js';
 
@@ -13,7 +14,7 @@ function CarrierModal({ carrier, onClose }) {
   const { t, repo, act } = useApp();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(carrierSchema),
-    defaultValues: { name: carrier?.name ?? '', contactName: carrier?.contactName ?? '', phone: carrier?.phone ?? '', email: carrier?.email ?? '', notes: carrier?.notes ?? '' },
+    defaultValues: { name: carrier?.name ?? '', contactName: carrier?.contactName ?? '', phone: carrier?.phone ?? '', email: carrier?.email ?? '', notes: carrier?.notes ?? '', routes: carrier?.routes ?? '', services: carrier?.services ?? [] },
   });
   const submit = handleSubmit(async (v) => {
     const r = await act(() => (carrier ? repo.updateCarrier(carrier.id, v) : repo.createCarrier(v)), 'car.saved');
@@ -38,20 +39,66 @@ function CarrierModal({ carrier, onClose }) {
           <Field label={t('car.phone')}><Input type="tel" {...register('phone')} /></Field>
           <Field label={t('car.email')} error={errors.email?.message}><Input type="email" {...register('email')} /></Field>
         </div>
+        <Field label={t('car.routes')} hint={t('car.routesHint')} error={errors.routes?.message}><Textarea rows={3} maxLength={600} {...register('routes')} /></Field>
+        <fieldset>
+          <legend className="mb-1.5 text-sm font-medium">{t('car.services')}</legend>
+          <div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
+            {CARRIER_SERVICES.map((k) => <Checkbox key={k} value={k} label={t(`svc.${k}`)} {...register('services')} />)}
+          </div>
+        </fieldset>
         <Field label={t('car.notes')}><Textarea {...register('notes')} /></Field>
       </form>
     </Modal>
   );
 }
 
+function InteractionForm({ carrierId }) {
+  const { t, repo, act } = useApp();
+  const today = new Date().toISOString().slice(0, 10);
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(interactionSchema),
+    defaultValues: { channel: 'call', date: today, note: '' },
+  });
+  const submit = handleSubmit(async (v) => {
+    const r = await act(() => repo.addInteraction(carrierId, v), 'car.interactionAdded');
+    if (r.ok) reset({ channel: 'call', date: today, note: '' });
+  });
+  return (
+    <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-3 border-b border-line p-4 sm:grid-cols-2 2xl:grid-cols-[150px_160px_minmax(0,1fr)_auto] 2xl:items-start sm:p-5" data-interaction-form>
+      <Field label={t('car.channel')}><Select {...register('channel')}>{INTERACTION_CHANNELS.map((k) => <option key={k} value={k}>{t(`hx.channel.${k}`)}</option>)}</Select></Field>
+      <Field label={t('doc.date')} error={errors.date?.message}><Input type="date" {...register('date')} /></Field>
+      <Field className="sm:col-span-2 2xl:col-span-1" label={t('car.interactionNote')} error={errors.note?.message}><Input maxLength={500} placeholder={t('car.interactionPh')} {...register('note')} data-interaction-note /></Field>
+      <Button type="submit" variant="primary" icon={Plus} loading={isSubmitting} className="sm:col-span-2 2xl:col-span-1 2xl:mt-[26px]">{t('common.add')}</Button>
+    </form>
+  );
+}
+
 export default function Carriers() {
-  const { t, data, repo, act, fmt } = useApp();
+  const { t, data, repo, act, fmt, views } = useApp();
   const tabletUp = useIsTabletUp();
   const [selId, setSelId] = useState(null);
+  const [search, setSearch] = useState('');
   const [editing, setEditing] = useState(null);
   const [del, setDel] = useState(null);
 
-  const sel = data.carriers.find((c) => c.id === selId) ?? data.carriers[0] ?? null;
+  const carriers = useMemo(() => {
+    const n = search.trim().toLowerCase();
+    return n ? data.carriers.filter((c) => [c.name, c.contactName, c.routes].some((x) => String(x ?? '').toLowerCase().includes(n))) : data.carriers;
+  }, [data.carriers, search]);
+  const sel = carriers.find((c) => c.id === selId) ?? carriers[0] ?? null;
+  const history = useMemo(() => (sel ? carrierHistory(views, sel.id) : []), [views, sel]);
+  const stats = useMemo(() => {
+    const quotes = history.filter((h) => h.base !== null).map((h) => h.base);
+    const routes = [...new Set(history.map((h) => h.route))];
+    return {
+      offers: history.length,
+      wins: history.filter((h) => h.won).length,
+      avg: quotes.length ? Math.round(quotes.reduce((s, x) => s + x, 0) / quotes.length) : null,
+      sample: quotes.length,
+      routes,
+    };
+  }, [history]);
+  const events = useMemo(() => (sel ? data.events.filter((e) => e.entityType === 'carrier' && e.entityId === sel.id) : []), [data.events, sel]);
   const shipmentById = useMemo(() => new Map(data.shipments.map((s) => [s.id, s])), [data.shipments]);
   const offers = useMemo(() => (sel ? data.offers.filter((o) => o.carrierId === sel.id) : []), [data.offers, sel]);
   const cmpByOffer = (oid) => data.comparisons.find((c) => c.offerIds.includes(oid));
@@ -66,9 +113,16 @@ export default function Carriers() {
       {data.carriers.length === 0 ? (
         <Card><EmptyState icon={Truck} title={t('empty.carriers.title')} text={t('empty.carriers.text')} action={<Button variant="primary" icon={Plus} onClick={() => setEditing('new')}>{t('car.new')}</Button>} /></Card>
       ) : (
+        <>
+        {data.carriers.length > 3 && (
+          <div className="relative mb-4 max-w-md">
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('car.search')} aria-label={t('car.search')} className="pl-9" />
+          </div>
+        )}
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden" role="tablist" aria-label={t('nav.carriers')}>
-            {data.carriers.map((c) => (
+            {carriers.map((c) => (
               <button
                 key={c.id}
                 type="button"
@@ -86,7 +140,7 @@ export default function Carriers() {
           </div>
           <Card className="hidden self-start overflow-hidden lg:block">
             <ul className="divide-y divide-line">
-              {data.carriers.map((c) => (
+              {carriers.map((c) => (
                 <li key={c.id}>
                   <button
                     type="button"
@@ -124,6 +178,33 @@ export default function Carriers() {
                 <div className="border-t border-line px-5 py-4">
                   <div className="mb-1 text-xs font-medium text-ink-soft">{t('car.notes')}</div>
                   <p className="whitespace-pre-line text-sm">{sel.notes || '—'}</p>
+                </div>
+              </Card>
+
+              <Card data-carrier-profile>
+                <CardHeader title={t('car.profile')} subtitle={t('car.profileHint')} />
+                <div className="grid grid-cols-2 gap-3 p-4 sm:p-5 md:grid-cols-3">
+                  <div><div className="text-xs text-ink-soft">{t('car.statOffers')}</div><div className="tabular mt-0.5 text-lg font-semibold">{stats.offers}</div></div>
+                  <div><div className="text-xs text-ink-soft">{t('car.statWins')}</div><div className="tabular mt-0.5 text-lg font-semibold">{stats.wins}</div></div>
+                  <div className="col-span-2 md:col-span-1">
+                    <div className="text-xs text-ink-soft">{t('car.statAvg')}</div>
+                    <div className="tabular mt-0.5 text-lg font-semibold">{stats.avg === null ? '—' : fmt.money(stats.avg)}</div>
+                    <div className="text-[11px] text-ink-soft">{stats.avg === null ? t('car.statAvgNone') : t('car.statAvgHint', { n: stats.sample })}</div>
+                  </div>
+                </div>
+                <div className="space-y-3 border-t border-line px-4 py-4 sm:px-5">
+                  <div>
+                    <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-ink-soft"><MapPin size={13} />{t('car.routes')}</div>
+                    {sel.routes ? <p className="whitespace-pre-line text-sm">{sel.routes}</p> : <p className="text-sm text-ink-soft">—</p>}
+                    {stats.routes.length > 0 && (
+                      <p className="mt-1.5 flex flex-wrap gap-1.5 text-xs text-ink-soft"><span>{t('car.routesSeen')}:</span>{stats.routes.map((r) => <Badge key={r}>{r}</Badge>)}</p>
+                    )}
+                  </div>
+                  <div>
+                    <div className="mb-1.5 text-xs font-medium text-ink-soft">{t('car.services')}</div>
+                    {(sel.services ?? []).length ? <div className="flex flex-wrap gap-1.5">{sel.services.map((k) => <Badge key={k} tone="brand">{t(`svc.${k}`)}</Badge>)}</div> : <p className="text-sm text-ink-soft">—</p>}
+                  </div>
+                  <p className="text-[11px] text-ink-soft">{t('car.noRatings')}</p>
                 </div>
               </Card>
 
@@ -180,9 +261,15 @@ export default function Carriers() {
                   </div>
                 )}
               </Card>
+              <Card data-carrier-history>
+                <CardHeader title={t('car.interactions')} subtitle={t('car.interactionsHint')} />
+                <InteractionForm carrierId={sel.id} />
+                <HistoryTimeline events={events} entity="carrier" onRemove={(e) => act(() => repo.removeEvent(e.id), 'car.interactionRemoved')} />
+              </Card>
             </div>
           )}
         </div>
+        </>
       )}
       {editing && <CarrierModal carrier={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
       <ConfirmDialog

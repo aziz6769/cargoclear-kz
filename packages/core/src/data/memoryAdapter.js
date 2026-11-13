@@ -5,7 +5,7 @@
  * All methods are async.
  */
 export function createMemoryAdapter() {
-  const data = { carriers: new Map(), shipments: new Map(), offers: new Map(), comparisons: new Map() };
+  const data = { carriers: new Map(), shipments: new Map(), offers: new Map(), comparisons: new Map(), documents: new Map(), events: new Map() };
   let meta = new Map();
   const clone = (x) => (x === undefined ? x : JSON.parse(JSON.stringify(x)));
   return {

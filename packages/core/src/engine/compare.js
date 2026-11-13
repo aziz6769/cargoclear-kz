@@ -30,11 +30,24 @@ export function compareAnalyses(analyses, { baseCurrency = DEFAULT_CURRENCY, rat
       extra: conv(a.extraTotal),
       lowerBound: conv(a.lowerBound),
       total: conv(a.comparableTotal),
+      comparability: 'partial',
       rank: null,
       diffAbs: null,
       diffPct: null,
       bound: null,
     };
+  });
+
+  // Per-offer comparability:
+  //   comparable     - every required cost is confirmed, currency usable -> ranked
+  //   not_comparable - a currency without a rate, or the offer stops 2+ levels short of the
+  //                    common destination (e.g. terminal only) so delivery conditions are too different
+  //   partial        - otherwise: something important is still unconfirmed
+  items.forEach((i, idx) => {
+    const a = analyses[idx];
+    const farShort = a.destination.gap && a.destination.targetLevel - a.destination.endpointLevel >= 2;
+    if (i.currencyBlocked || (farShort && i.total === null)) i.comparability = 'not_comparable';
+    else if (i.total !== null) i.comparability = 'comparable';
   });
 
   const ranked = items.filter((i) => i.total !== null).sort((x, y) => x.total - y.total);
