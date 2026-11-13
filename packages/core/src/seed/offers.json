@@ -1,0 +1,782 @@
+[
+  {
+    "id": "off_demo01",
+    "carrierId": "car_demo1",
+    "shipmentId": "shp_demo01",
+    "currency": "KZT",
+    "startLocation": "Алматы, склад клиента",
+    "endpointLabel": "Склад клиента, Астана",
+    "includedServices": [
+      "Погрузка",
+      "Доставка до склада"
+    ],
+    "excludedServices": [
+      "Разгрузка"
+    ],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-11-10T08:30:00.000Z",
+    "price": 520000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ftl",
+    "deliveryDays": 2,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "charged",
+        "amount": 25000
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo02",
+    "carrierId": "car_demo2",
+    "shipmentId": "shp_demo01",
+    "currency": "KZT",
+    "startLocation": "Алматы",
+    "endpointLabel": "Грузовой терминал, Астана",
+    "includedServices": [
+      "Погрузка",
+      "Перевозка до терминала"
+    ],
+    "excludedServices": [
+      "Доставка со склада терминала"
+    ],
+    "additionalCharges": [],
+    "notes": "Менеджер не подтвердил разгрузку и хранение.",
+    "createdAt": "2026-11-10T08:35:00.000Z",
+    "price": 410000,
+    "endpoint": "terminal",
+    "transportType": "rail",
+    "deliveryDays": 4,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "unknown",
+        "amount": null
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "charged",
+        "amount": 18000
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "excluded",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo03",
+    "carrierId": "car_demo3",
+    "shipmentId": "shp_demo01",
+    "currency": "KZT",
+    "startLocation": "Алматы",
+    "endpointLabel": "Хаб Алатау Карго, Астана",
+    "includedServices": [
+      "Погрузка",
+      "Разгрузка на хабе"
+    ],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-11-10T08:40:00.000Z",
+    "price": 455000,
+    "endpoint": "hub",
+    "transportType": "truck_ltl",
+    "deliveryDays": 3,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "included",
+        "amount": null
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "included",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "charged",
+        "amount": 60000
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo04",
+    "carrierId": "car_demo2",
+    "shipmentId": "shp_demo02",
+    "currency": "KZT",
+    "startLocation": "Алматы",
+    "endpointLabel": "Строительная база, Шымкент",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-11-06T10:00:00.000Z",
+    "price": 380000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ftl",
+    "deliveryDays": 3,
+    "costs": {
+      "loading": {
+        "status": "charged",
+        "amount": 20000
+      },
+      "unloading": {
+        "status": "included",
+        "amount": null
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo05",
+    "carrierId": "car_demo4",
+    "shipmentId": "shp_demo02",
+    "currency": "KZT",
+    "startLocation": "Алматы",
+    "endpointLabel": "Строительная база, Шымкент",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-11-06T10:05:00.000Z",
+    "price": 350000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ftl",
+    "deliveryDays": 4,
+    "costs": {
+      "loading": {
+        "status": "charged",
+        "amount": 30000
+      },
+      "unloading": {
+        "status": "charged",
+        "amount": 45000
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo06",
+    "carrierId": "car_demo1",
+    "shipmentId": "shp_demo02",
+    "currency": "KZT",
+    "startLocation": "Алматы",
+    "endpointLabel": "Строительная база, Шымкент",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "Разгрузку обещали уточнить.",
+    "createdAt": "2026-11-06T10:10:00.000Z",
+    "price": 360000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ftl",
+    "deliveryDays": 3,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "unknown",
+        "amount": null
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo07",
+    "carrierId": "car_demo4",
+    "shipmentId": "shp_demo03",
+    "currency": "KZT",
+    "startLocation": "Туркестан",
+    "endpointLabel": "РЦ, Астана",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-10-30T07:00:00.000Z",
+    "price": 610000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ftl",
+    "deliveryDays": 4,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "charged",
+        "amount": 30000
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "charged",
+        "amount": 22000
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo08",
+    "carrierId": "car_demo5",
+    "shipmentId": "shp_demo03",
+    "currency": "USD",
+    "startLocation": "Туркестан",
+    "endpointLabel": "РЦ, Астана",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "Цена в USD, курс не зафиксирован.",
+    "createdAt": "2026-10-30T07:10:00.000Z",
+    "price": 1250,
+    "endpoint": "warehouse",
+    "transportType": "multimodal",
+    "deliveryDays": 5,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "included",
+        "amount": null
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "included",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo09",
+    "carrierId": "car_demo3",
+    "shipmentId": "shp_demo03",
+    "currency": "KZT",
+    "startLocation": "Туркестан",
+    "endpointLabel": "РЦ, Астана",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-10-30T07:20:00.000Z",
+    "price": 590000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ltl",
+    "deliveryDays": 4,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "charged",
+        "amount": 28000
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo10",
+    "carrierId": "car_demo1",
+    "shipmentId": "shp_demo04",
+    "currency": "KZT",
+    "startLocation": "Шымкент",
+    "endpointLabel": "Магазин, Алматы",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-10-24T11:00:00.000Z",
+    "price": 240000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ltl",
+    "deliveryDays": 2,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "charged",
+        "amount": 15000
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "charged",
+        "amount": 9000
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo11",
+    "carrierId": "car_demo3",
+    "shipmentId": "shp_demo04",
+    "currency": "KZT",
+    "startLocation": "Шымкент",
+    "endpointLabel": "Магазин, Алматы",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-10-24T11:05:00.000Z",
+    "price": 205000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ltl",
+    "deliveryDays": 3,
+    "costs": {
+      "loading": {
+        "status": "charged",
+        "amount": 12000
+      },
+      "unloading": {
+        "status": "charged",
+        "amount": 15000
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "included",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo12",
+    "carrierId": "car_demo4",
+    "shipmentId": "shp_demo04",
+    "currency": "KZT",
+    "startLocation": "Шымкент",
+    "endpointLabel": "Хаб Сарыарка Фрейт, Алматы",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-10-24T11:10:00.000Z",
+    "price": 225000,
+    "endpoint": "hub",
+    "transportType": "truck_ltl",
+    "deliveryDays": 2,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "included",
+        "amount": null
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "charged",
+        "amount": 8000
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "charged",
+        "amount": 20000
+      },
+      "insurance": {
+        "status": "charged",
+        "amount": 10000
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo13",
+    "carrierId": "car_demo2",
+    "shipmentId": "shp_demo05",
+    "currency": "KZT",
+    "startLocation": "Алматы",
+    "endpointLabel": "Склад автосервиса, Астана",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-11-11T09:00:00.000Z",
+    "price": 135000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ltl",
+    "deliveryDays": 3,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "included",
+        "amount": null
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo14",
+    "carrierId": "car_demo5",
+    "shipmentId": "shp_demo05",
+    "currency": "KZT",
+    "startLocation": "Алматы",
+    "endpointLabel": "Терминал ст. Астана-1",
+    "includedServices": [],
+    "excludedServices": [
+      "Доставка со станции"
+    ],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-11-11T09:05:00.000Z",
+    "price": 120000,
+    "endpoint": "terminal",
+    "transportType": "rail",
+    "deliveryDays": 5,
+    "costs": {
+      "loading": {
+        "status": "included",
+        "amount": null
+      },
+      "unloading": {
+        "status": "unknown",
+        "amount": null
+      },
+      "storage": {
+        "status": "excluded",
+        "amount": 4000
+      },
+      "terminal": {
+        "status": "charged",
+        "amount": 6000
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "excluded",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  },
+  {
+    "id": "off_demo15",
+    "carrierId": "car_demo1",
+    "shipmentId": "shp_demo05",
+    "currency": "KZT",
+    "startLocation": "Алматы",
+    "endpointLabel": "Склад автосервиса, Астана",
+    "includedServices": [],
+    "excludedServices": [],
+    "additionalCharges": [],
+    "notes": "",
+    "createdAt": "2026-11-11T09:10:00.000Z",
+    "price": 150000,
+    "endpoint": "warehouse",
+    "transportType": "truck_ltl",
+    "deliveryDays": 2,
+    "costs": {
+      "loading": {
+        "status": "charged",
+        "amount": 8000
+      },
+      "unloading": {
+        "status": "charged",
+        "amount": 10000
+      },
+      "storage": {
+        "status": "unknown",
+        "amount": null
+      },
+      "terminal": {
+        "status": "unknown",
+        "amount": null
+      },
+      "handling": {
+        "status": "unknown",
+        "amount": null
+      },
+      "lastMile": {
+        "status": "unknown",
+        "amount": null
+      },
+      "insurance": {
+        "status": "unknown",
+        "amount": null
+      },
+      "customs": {
+        "status": "unknown",
+        "amount": null
+      }
+    }
+  }
+]

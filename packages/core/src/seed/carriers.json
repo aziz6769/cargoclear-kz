@@ -1,0 +1,52 @@
+[
+  {
+    "id": "car_demo1",
+    "name": "Степной Экспресс",
+    "contactName": "Айдос Серик",
+    "phone": "+7 (700) 000-00-01",
+    "email": "demo1@example.kz",
+    "notes": "Основной автоперевозчик по трассе Алматы — Астана.",
+    "isDemo": true,
+    "createdAt": "2026-09-01T09:00:00.000Z"
+  },
+  {
+    "id": "car_demo2",
+    "name": "КазТранзит Логистик",
+    "contactName": "Марат Оспан",
+    "phone": "+7 (700) 000-00-02",
+    "email": "demo2@example.kz",
+    "notes": "Часто дешевле по базовой цене, но доставляет до терминала.",
+    "isDemo": true,
+    "createdAt": "2026-09-01T09:00:00.000Z"
+  },
+  {
+    "id": "car_demo3",
+    "name": "Алатау Карго",
+    "contactName": "Алия Нұр",
+    "phone": "+7 (700) 000-00-03",
+    "email": "demo3@example.kz",
+    "notes": "Сборные грузы, собственный хаб в Астане.",
+    "isDemo": true,
+    "createdAt": "2026-09-01T09:00:00.000Z"
+  },
+  {
+    "id": "car_demo4",
+    "name": "Сарыарка Фрейт",
+    "contactName": "Данияр Ж.",
+    "phone": "+7 (700) 000-00-04",
+    "email": "demo4@example.kz",
+    "notes": "Юг — Центр, работает с продуктами и стройматериалами.",
+    "isDemo": true,
+    "createdAt": "2026-09-01T09:00:00.000Z"
+  },
+  {
+    "id": "car_demo5",
+    "name": "Жібек Жолы Транс",
+    "contactName": "Ерлан Т.",
+    "phone": "+7 (700) 000-00-05",
+    "email": "demo5@example.kz",
+    "notes": "Мультимодальные перевозки, часть тарифов в USD.",
+    "isDemo": true,
+    "createdAt": "2026-09-01T09:00:00.000Z"
+  }
+]

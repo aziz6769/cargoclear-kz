@@ -1,0 +1,16 @@
+{
+  "name": "@cargoclear/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./seed": "./src/seed/index.js"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}

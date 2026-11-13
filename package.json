@@ -1,0 +1,13 @@
+{
+  "name": "cargoclear-kz",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev:web": "npm run dev -w @cargoclear/web",
+    "build:web": "npm run build -w @cargoclear/web",
+    "test": "npm test -w @cargoclear/core",
+    "seed": "node packages/core/scripts/generate-seed.mjs",
+    "check:i18n": "node packages/core/scripts/check-i18n.mjs"
+  }
+}

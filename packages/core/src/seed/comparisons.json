@@ -1,0 +1,72 @@
+[
+  {
+    "id": "cmp_demo1",
+    "name": "Мебель в Астану: терминал vs склад",
+    "shipmentId": "shp_demo01",
+    "offerIds": [
+      "off_demo01",
+      "off_demo02",
+      "off_demo03"
+    ],
+    "notes": "",
+    "createdAt": "2026-11-10T08:45:00.000Z",
+    "updatedAt": "2026-11-10T08:45:00.000Z",
+    "isDemo": true
+  },
+  {
+    "id": "cmp_demo2",
+    "name": "Стройматериалы в Шымкент",
+    "shipmentId": "shp_demo02",
+    "offerIds": [
+      "off_demo04",
+      "off_demo05",
+      "off_demo06"
+    ],
+    "notes": "",
+    "createdAt": "2026-11-06T10:15:00.000Z",
+    "updatedAt": "2026-11-06T10:15:00.000Z",
+    "isDemo": true
+  },
+  {
+    "id": "cmp_demo3",
+    "name": "Продукты Туркестан → Астана",
+    "shipmentId": "shp_demo03",
+    "offerIds": [
+      "off_demo07",
+      "off_demo08",
+      "off_demo09"
+    ],
+    "notes": "",
+    "createdAt": "2026-10-30T07:30:00.000Z",
+    "updatedAt": "2026-10-30T07:30:00.000Z",
+    "isDemo": true
+  },
+  {
+    "id": "cmp_demo4",
+    "name": "Бытовая техника в Алматы",
+    "shipmentId": "shp_demo04",
+    "offerIds": [
+      "off_demo10",
+      "off_demo11",
+      "off_demo12"
+    ],
+    "notes": "",
+    "createdAt": "2026-10-24T11:15:00.000Z",
+    "updatedAt": "2026-10-24T11:15:00.000Z",
+    "isDemo": true
+  },
+  {
+    "id": "cmp_demo5",
+    "name": "Автозапчасти в Астану",
+    "shipmentId": "shp_demo05",
+    "offerIds": [
+      "off_demo13",
+      "off_demo14",
+      "off_demo15"
+    ],
+    "notes": "",
+    "createdAt": "2026-11-11T09:15:00.000Z",
+    "updatedAt": "2026-11-11T09:15:00.000Z",
+    "isDemo": true
+  }
+]

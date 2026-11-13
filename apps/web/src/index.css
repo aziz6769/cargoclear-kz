@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer components {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .card {
+    @apply rounded-card border border-line bg-white shadow-card;
+  }
+  /* diagonal stripes = "unknown part" of a cost bar */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      45deg,
+      #f2b544 0,
+      #f2b544 4px,
+      #fef5e1 4px,
+      #fef5e1 8px
+    );
+  }
+}
