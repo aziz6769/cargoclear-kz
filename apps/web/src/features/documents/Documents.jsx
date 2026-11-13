@@ -6,11 +6,15 @@ import { useApp } from '../../app/DataContext.jsx';
 import { Badge, Banner, Button, Card, ConfirmDialog, EmptyState, IconButton, Input, PageHeader, Select } from '../../components/ui.jsx';
 import DocumentModal, { offerLabel } from './DocumentModal.jsx';
 
-export function downloadDoc(d) {
-  if (!d.file?.dataUrl) return;
+/** Local files are saved from their data URL. Cloud files are fetched through a short-lived signed URL (the bucket is private). */
+export async function downloadDoc(d, cloud = null) {
+  let href = d.file?.dataUrl;
+  if (!href && d.file?.storagePath && cloud) href = await cloud.signedUrl(d.file.storagePath);
+  if (!href) throw new Error('file_unavailable');
   const a = document.createElement('a');
-  a.href = d.file.dataUrl;
+  a.href = href;
   a.download = d.file.name;
+  a.rel = 'noopener';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -18,7 +22,7 @@ export function downloadDoc(d) {
 
 /** Documents linked to shipments / offers / carriers. Stored locally; no content recognition. */
 export function DocumentRow({ d, onEdit, onDelete, showShipment = true }) {
-  const { t, data, fmt } = useApp();
+  const { t, data, fmt, cloud, notify } = useApp();
   const shipment = data.shipments.find((s) => s.id === d.shipmentId);
   const offer = data.offers.find((o) => o.id === d.offerId);
   const carrier = data.carriers.find((c) => c.id === (d.carrierId || offer?.carrierId));
@@ -42,7 +46,7 @@ export function DocumentRow({ d, onEdit, onDelete, showShipment = true }) {
         {d.notes && <p className="mt-1 break-words text-xs text-ink-soft">{d.notes}</p>}
       </div>
       <div className="-mr-2 flex shrink-0">
-        {d.file && <IconButton icon={Download} label={t('doc.download')} onClick={() => downloadDoc(d)} />}
+        {d.file && <IconButton icon={Download} label={t('doc.download')} onClick={() => downloadDoc(d, cloud).catch(() => notify('bad', t('doc.downloadError')))} />}
         <IconButton icon={Pencil} label={t('common.edit')} onClick={() => onEdit(d)} />
         <IconButton icon={Trash2} tone="danger" label={t('common.delete')} onClick={() => onDelete(d)} />
       </div>

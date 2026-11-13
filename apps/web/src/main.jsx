@@ -5,17 +5,18 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/manrope';
 import { createRepository } from '@cargoclear/core';
 import { seed } from '@cargoclear/core/seed';
-import App from './App.jsx';
+import Root from './app/Root.jsx';
+import { cloudConfigured } from './lib/supabase.js';
 import { createDexieAdapter } from './storage/dexieAdapter.js';
 import './index.css';
 
-// Storage layer -> Data access layer. Replace `repo` with a REST-backed repository later.
-const repo = createRepository(createDexieAdapter(), seed);
+// Without VITE_SUPABASE_* the app runs exactly as in Phase 3 (IndexedDB + demo seed). With them it requires sign-in.
+const localRepo = cloudConfigured ? null : createRepository(createDexieAdapter(), seed);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App repo={repo} />
+      <Root localRepo={localRepo} />
     </BrowserRouter>
   </React.StrictMode>,
 );

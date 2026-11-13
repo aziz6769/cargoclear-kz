@@ -22,6 +22,8 @@ import { PageSkeleton } from './Skeleton.jsx';
 import { LangSwitch } from './LangSwitch.jsx';
 import { useApp } from '../app/DataContext.jsx';
 import { Banner, Button, cx } from './ui.jsx';
+import SyncBadge from '../features/cloud/SyncBadge.jsx';
+import AccountMenu from '../features/cloud/AccountMenu.jsx';
 
 const NAV = [
   { to: '/', key: 'nav.dashboard', icon: LayoutDashboard, end: true },
@@ -95,7 +97,7 @@ function Sidebar({ expanded, setExpanded }) {
 }
 
 function Topbar() {
-  const { t, settings, launchDemo } = useApp();
+  const { t, settings, launchDemo, mode, onExitDemo, exitLabel } = useApp();
   const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-line bg-white/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur md:h-16 md:px-8">
@@ -107,7 +109,9 @@ function Topbar() {
       </div>
       <div className="hidden text-sm text-ink-soft md:block">{t('app.tagline')}</div>
       <div className="flex items-center gap-2">
-        <Button
+        <SyncBadge compact />
+        {mode === 'demo' && <Button onClick={onExitDemo} data-exit-demo>{exitLabel}</Button>}
+        {mode !== 'cloud' && mode !== 'demo' && <Button
           variant="secondary"
           icon={Play}
           data-launch-demo
@@ -118,14 +122,16 @@ function Topbar() {
           }}
         >
           <span className="max-lg:hidden">{t('demo.launch')}</span>
-        </Button>
+        </Button>}
         <LangSwitch />
         <Button variant="primary" icon={Plus} onClick={() => navigate('/compare/new')} className="hidden sm:inline-flex">
           {t('common.newComparison')}
         </Button>
-        <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand lg:flex" title={settings.profile.name}>
-          {(settings.profile.name || 'U').slice(0, 1).toUpperCase()}
-        </span>
+        {mode === 'cloud' ? <AccountMenu /> : (
+          <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand lg:flex" title={settings.profile.name}>
+            {(settings.profile.name || 'U').slice(0, 1).toUpperCase()}
+          </span>
+        )}
       </div>
     </header>
   );
@@ -163,7 +169,7 @@ function BottomNav() {
 }
 
 export default function AppShell() {
-  const { t } = useApp();
+  const { t, mode } = useApp();
   const [expanded, setExpanded] = useState(false);
   const [bannerOpen, setBannerOpen] = useState(true);
   return (
@@ -172,7 +178,8 @@ export default function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
         <main className="mx-auto w-full max-w-[1280px] min-w-0 flex-1 px-4 py-4 pb-[calc(5rem+env(safe-area-inset-bottom))] md:px-8 md:py-6 md:pb-10">
-          {bannerOpen && (
+          {mode === 'demo' && <Banner tone="warn" title={t('auth.demo.banner.title')} className="mb-4 text-[13px] md:text-sm">{t('auth.demo.banner.text')}</Banner>}
+          {mode === 'local' && bannerOpen && (
             <div className="relative mb-4 md:mb-5">
               <Banner tone="info" title={t('demo.title')} className="pr-12 text-[13px] md:text-sm">
                 {t('demo.text')}

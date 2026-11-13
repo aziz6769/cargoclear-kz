@@ -1,6 +1,14 @@
 import { forwardRef, useEffect } from 'react';
 import { AlertTriangle, CheckCircle2, Info, Loader2, X } from 'lucide-react';
 import { useApp } from '../app/DataContext.jsx';
+import { useAuth } from '../app/AuthContext.jsx';
+
+// Shared components also render on the public (signed-out) pages, where only the auth context exists.
+function useT() {
+  const app = useApp();
+  const auth = useAuth();
+  return (app ?? auth)?.t ?? ((k) => k);
+}
 
 export const cx = (...a) => a.filter(Boolean).join(' ');
 
@@ -113,7 +121,7 @@ export const Checkbox = forwardRef(function Checkbox({ label, className, ...p },
 });
 
 export function Field({ label, error, hint, required, className, children }) {
-  const { t } = useApp();
+  const t = useT();
   return (
     <label className={cx('block', className)}>
       <span className="mb-1 block text-xs font-medium text-ink-soft">
@@ -180,7 +188,7 @@ export function Modal({ open, onClose, title, children, footer, wide }) {
 }
 
 export function ConfirmDialog({ open, title, text, confirmLabel, onConfirm, onClose, danger = true }) {
-  const { t } = useApp();
+  const t = useT();
   return (
     <Modal
       open={open}

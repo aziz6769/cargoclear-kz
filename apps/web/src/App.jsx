@@ -18,9 +18,10 @@ const AssistantPage = lazy(() => import('./features/assistant/AssistantPage.jsx'
 const Documents = lazy(() => import('./features/documents/Documents.jsx'));
 const Analytics = lazy(() => import('./features/analytics/Analytics.jsx'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage.jsx'));
+const Profile = lazy(() => import('./features/cloud/Profile.jsx'));
+const Migration = lazy(() => import('./features/cloud/Migration.jsx'));
 
 class ErrorBoundary extends Component {
-  static contextType = undefined;
   state = { error: null };
   static getDerivedStateFromError(error) {
     return { error };
@@ -41,7 +42,7 @@ class ErrorBoundary extends Component {
 }
 
 function Gate() {
-  const { status, error, reload, t } = useApp();
+  const { status, error, reload, t, mode } = useApp();
   if (status === 'loading') return <Spinner label={t('common.loading')} />;
   if (status === 'error')
     return (
@@ -59,7 +60,7 @@ function Gate() {
       <Suspense fallback={<div className="mx-auto max-w-6xl p-4 sm:p-8"><PageSkeleton /></div>}>
       <Routes>
         {/* standalone pages: presentation mode and the printable report have their own chrome */}
-        <Route path="demo" element={<DemoMode />} />
+        {mode !== 'cloud' && <Route path="demo" element={<DemoMode />} />}
         <Route path="comparisons/:id/report" element={<ReportPage />} />
         <Route element={<AppShell />}>
           <Route index element={<Dashboard />} />
@@ -75,6 +76,8 @@ function Gate() {
           <Route path="assistant" element={<AssistantPage />} />
           <Route path="history" element={<History />} />
           <Route path="settings" element={<SettingsPage />} />
+          {mode === 'cloud' && <Route path="profile" element={<Profile />} />}
+          {mode === 'cloud' && <Route path="migrate" element={<Migration />} />}
           <Route path="*" element={<Dashboard />} />
         </Route>
       </Routes>
@@ -83,9 +86,9 @@ function Gate() {
   );
 }
 
-export default function App({ repo }) {
+export default function App({ repo, cloud = null, mode = 'local', account = null, onExitDemo, exitLabel }) {
   return (
-    <DataProvider repo={repo}>
+    <DataProvider repo={repo} cloud={cloud} mode={mode} account={account} onExitDemo={onExitDemo} exitLabel={exitLabel}>
       <Gate />
     </DataProvider>
   );

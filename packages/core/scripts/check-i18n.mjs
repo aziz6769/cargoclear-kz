@@ -12,7 +12,7 @@ const walk = (d) => readdirSync(d).flatMap((f) => {
   const p = join(d, f);
   return statSync(p).isDirectory() ? walk(p) : /\.(jsx?|mjs)$/.test(p) ? [p] : [];
 });
-const PREFIXES = 'nav|common|dash|wiz|ship|offer|res|state|status|endpoint|comp|cs|cat|transport|shipStatus|hist|cmp|car|ana|set|empty|err|demo|app|q|v|an|ex|csv|rep|onb|gloss|country|as|doc|hx|svc';
+const PREFIXES = 'nav|common|dash|wiz|ship|offer|res|state|status|endpoint|comp|cs|cat|transport|shipStatus|hist|cmp|car|ana|set|empty|err|demo|app|q|v|an|ex|csv|rep|onb|gloss|country|as|doc|hx|svc|auth|sync|mig';
 const re = new RegExp(`['"\`]((?:${PREFIXES})\\.[A-Za-z0-9]+(?:\\.[A-Za-z0-9]+)*)['"\`]`, 'g');
 
 const used = new Set();
@@ -55,6 +55,12 @@ for (const k of [1, 2, 3]) { used.add(`onb.step${k}.t`); used.add(`onb.step${k}.
 for (const k of ['comparable', 'not', 'partial']) used.add(`ex.verdict.${k}`);
 for (const k of ['currency', 'endpoint']) used.add(`ex.reason.${k}`);
 for (const k of ['exceeds', 'may']) used.add(`ex.bound.${k}`);
+
+// Phase 4 dynamic keys
+for (const st of ['synced', 'syncing', 'pending', 'offline', 'error', 'auth']) { used.add(`sync.${st}`); used.add(`sync.${st}.hint`); }
+for (const k of ['network', 'auth', 'rejected']) used.add(`sync.err.${k}`);
+for (const k of ['shipments', 'carriers', 'comparisons', 'offers', 'documents', 'events']) used.add(`mig.coll.${k}`);
+for (const k of ['upload', 'verify', 'done', 'error']) used.add(`mig.phase.${k}`);
 
 let bad = 0;
 for (const [name, d] of Object.entries({ ru, kk, en })) {

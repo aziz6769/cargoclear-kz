@@ -11,6 +11,7 @@ export default defineConfig({
           charts: ['recharts'],
           forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
           storage: ['dexie'],
+          supabase: ['@supabase/supabase-js'],
         },
       },
     },
@@ -18,6 +19,11 @@ export default defineConfig({
   server: { host: true, port: 5173 },
   test: {
     environment: 'jsdom',
+    environmentOptions: {
+      jsdom: {
+        url: 'http://localhost/',
+      },
+    },
     setupFiles: ['./src/test-setup.js'],
     globals: true,
     css: false,

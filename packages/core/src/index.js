@@ -27,3 +27,10 @@ export { suggestQuestions } from './assistant/suggest.js';
 export { renderBlock, resolveParams, answerToText, sourceLabel } from './assistant/render.js';
 export { createHttpProvider, rulesProvider, validEndpoint, ungroundedNumbers, AssistantError } from './assistant/provider.js';
 export { routeOf, listRoutes, filterViews, costDynamics, spendByPeriod, spendByRoute, extraCostStructure, carrierComparison, carrierHistory } from './engine/analytics.js';
+
+// ---- Phase 4: cloud (Supabase) layer
+export { isUuid, uuidv4, uuidv5, CARGOCLEAR_NAMESPACE } from './cloud/ids.js';
+export { createCloudAdapter, classifyError, SyncError } from './cloud/cloudAdapter.js';
+export { buildMigrationPlan, runMigration, readLocalData, countRealRecords, mapId } from './cloud/migrate.js';
+export { toRow, fromRow, COLLECTIONS as CLOUD_COLLECTIONS, WRITE_ORDER } from './cloud/mappers.js';
+export { BUCKET as DOCUMENT_BUCKET, safeFileName, storagePathFor, validateFileMeta, dataUrlToBlob } from './cloud/files.js';

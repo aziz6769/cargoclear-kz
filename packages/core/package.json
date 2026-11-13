@@ -5,12 +5,16 @@
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./seed": "./src/seed/index.js"
+    "./seed": "./src/seed/index.js",
+    "./testing": "./src/cloud/testing/fakeSupabase.js"
   },
   "scripts": {
     "test": "node --test \"test/*.test.js\""
   },
   "dependencies": {
     "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16"
   }
 }

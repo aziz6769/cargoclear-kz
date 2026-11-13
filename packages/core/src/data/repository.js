@@ -1,4 +1,5 @@
 import { DEFAULT_SETTINGS, DOCUMENT_MAX_BYTES, SCHEMA_VERSION } from '../constants.js';
+import { uuidv4 } from '../cloud/ids.js';
 
 export class RepoError extends Error {
   constructor(code, message) {
@@ -7,10 +8,8 @@ export class RepoError extends Error {
   }
 }
 
-export const uid = (prefix) => {
-  const raw = globalThis.crypto?.randomUUID?.() ?? `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-  return `${prefix}_${raw.replace(/-/g, '').slice(0, 12)}`;
-};
+// New records get real UUIDs (the cloud schema uses uuid primary keys). The prefix argument is kept for call-site readability.
+export const uid = (_prefix) => uuidv4();
 
 const nowIso = () => new Date().toISOString();
 const byDateDesc = (a, b) => String(b.createdAt).localeCompare(String(a.createdAt));
@@ -291,6 +290,7 @@ export function createRepository(adapter, seed = null) {
 
   // ---------- maintenance ----------
   async function resetDemoData() {
+    if (!seed) throw new RepoError('invalid', 'no demo seed in this workspace'); // never wipe a workspace that has nothing to restore
     const settings = await getSettings();
     await adapter.clearAll();
     await seedData();

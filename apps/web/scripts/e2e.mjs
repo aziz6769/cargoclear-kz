@@ -123,7 +123,7 @@ try {
   await sleep(400);
   const newUrl = page.url();
   t = await text();
-  check('wizard: redirected to saved comparison', /\/comparisons\/cmp_/.test(newUrl), newUrl);
+  check('wizard: redirected to saved comparison', /\/comparisons\/[0-9a-f-]{36}/.test(newUrl), newUrl);
   check('wizard: offer A total = 110 000 ₸ (100k + 10k unloading)', /110[\s  ]000/.test(t));
   check('wizard: terminal offer B flagged incomplete, not ranked', t.includes('Нельзя сравнить, пока не уточнены затраты'));
   check('wizard: B questions include last mile + storage', t.includes('последней мили') && t.includes('хранение'));
@@ -143,7 +143,7 @@ try {
   t = await text();
   check('history: search narrows list', t.includes('E2E сравнение') && !t.includes('Стройматериалы в Шымкент'));
   await page.click('button[aria-label="Дублировать"]');
-  await page.waitForFunction(() => /\/comparisons\/cmp_/.test(location.pathname), { timeout: 8000 });
+  await page.waitForFunction(() => /\/comparisons\/[0-9a-f-]{36}/.test(location.pathname), { timeout: 8000 });
   await sleep(300);
   check('history: duplicate opens copy', (await text()).includes('(копия)'));
   await go('/history');

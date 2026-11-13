@@ -49,7 +49,7 @@ function AssistantSettings() {
 }
 
 export default function SettingsPage() {
-  const { t, settings, lang, repo, act, reload } = useApp();
+  const { t, settings, lang, repo, act, reload, mode } = useApp();
   const [confirm, setConfirm] = useState(null); // 'reset' | 'wipe'
   const { register, handleSubmit, watch, setError, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
@@ -169,7 +169,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader title={t('set.data')} subtitle={t('set.dataHint')} />
           <div className="flex flex-wrap gap-3 p-5">
-            <Button onClick={() => setConfirm('reset')}>{t('set.reset')}</Button>
+            {mode !== 'cloud' && <Button onClick={() => setConfirm('reset')}>{t('set.reset')}</Button>}
             <Button variant="dangerGhost" onClick={() => setConfirm('wipe')}>{t('set.wipe')}</Button>
           </div>
         </Card>
@@ -179,7 +179,7 @@ export default function SettingsPage() {
       <ConfirmDialog
         open={!!confirm}
         title={confirm === 'wipe' ? t('set.wipe') : t('set.reset')}
-        text={confirm === 'wipe' ? t('set.wipeText') : t('set.resetText')}
+        text={confirm === 'wipe' ? t(mode === 'cloud' ? 'set.wipeCloudText' : 'set.wipeText') : t('set.resetText')}
         confirmLabel={t('common.confirm')}
         onClose={() => setConfirm(null)}
         onConfirm={async () => {

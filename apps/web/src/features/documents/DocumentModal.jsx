@@ -21,7 +21,7 @@ export const offerLabel = (o, data, fmt) => {
 
 /** Create/edit a document record. The file is optional, small, and stored only in this browser. */
 export default function DocumentModal({ doc, defaults = {}, onClose }) {
-  const { t, data, repo, act, fmt } = useApp();
+  const { t, data, repo, act, fmt, mode } = useApp();
   const [file, setFile] = useState(doc?.file ?? null);
   const [fileError, setFileError] = useState('');
   const input = useRef(null);
@@ -109,7 +109,7 @@ export default function DocumentModal({ doc, defaults = {}, onClose }) {
           )}
           <input ref={input} type="file" hidden data-doc-input accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.txt" onChange={pick} />
           {fileError && <p role="alert" className="mt-1.5 text-xs text-bad">{fileError}</p>}
-          <p className="mt-1.5 text-xs text-ink-soft">{t('doc.fileHint', { mb: DOCUMENT_MAX_BYTES / 1024 / 1024 })}</p>
+          <p className="mt-1.5 text-xs text-ink-soft">{t(mode === 'cloud' ? 'doc.fileHintCloud' : 'doc.fileHint', { mb: DOCUMENT_MAX_BYTES / 1024 / 1024 })}</p>
         </div>
       </form>
     </Modal>
